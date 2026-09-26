@@ -1,1 +1,47 @@
+# Skripsi: Klasifikasi Tingkat Kematangan Buah Kopi Menggunakan Citra Digital Berbasis CNN MobileNetV2
 
+**Penulis:** Yohanes Darman Tala (NIM 22/23492/TP)
+**Program Studi:** Teknik Pertanian, Fakultas Teknologi Pertanian, Institut Pertanian Stiper (INSTIPER) Yogyakarta
+
+## Ringkasan Penelitian
+
+Repository ini memuat notebook pelatihan model untuk skripsi klasifikasi tingkat kematangan buah kopi ke dalam tiga kelas — **Mentah**, **Setengah Matang**, dan **Matang** — menggunakan Convolutional Neural Network (CNN) dengan arsitektur **MobileNetV2** berbasis transfer learning. Citra diambil langsung pada kondisi kebun (bukan di laboratorium), dengan variasi pencahayaan dan latar yang alami, sebanyak 900 citra (300 citra per kelas).
+
+Penelitian ini menguji empat skenario pelatihan untuk membandingkan pengaruh augmentasi data dan fine-tuning terhadap performa klasifikasi, dengan CNN sederhana yang dilatih dari nol sebagai pembanding.
+
+## Isi Notebook
+
+Notebook `PELATIHAN_ULANG.ipynb` memuat seluruh alur penelitian secara berurutan:
+
+1. Persiapan lingkungan dan pemuatan dataset (900 citra, 3 kelas, kondisi kebun)
+2. Pra-pemrosesan citra (resize 224×224, normalisasi)
+3. Pembagian data latih/validasi/uji (70:15:15, stratified, 630/135/135 citra)
+4. **Skenario 1** — MobileNetV2 pra-latih (baseline, tanpa augmentasi)
+5. **Skenario 2** — MobileNetV2 pra-latih dengan augmentasi data (rotasi, zoom, flip, kecerahan)
+6. **Skenario 3** — MobileNetV2 dengan augmentasi + fine-tuning 30 lapisan terakhir (model terbaik)
+7. **Skenario 4** — CNN sederhana dari nol, sebagai pembanding
+8. Evaluasi model (confusion matrix, precision, recall, F1-score) pada data uji
+9. Analisis kesalahan klasifikasi pada model terbaik
+10. Visualisasi Grad-CAM untuk interpretasi fokus perhatian model
+11. Pengukuran kinerja komputasi (waktu inferensi dan ukuran berkas model)
+
+## Hasil Akhir
+
+| Skenario | Akurasi | Macro F1 | F1 Mentah | F1 Setengah Matang | F1 Matang |
+|---|---|---|---|---|---|
+| S1 — Baseline | 0,81 | 0,81 | 0,88 | 0,76 | 0,81 |
+| S2 — Augmentasi | 0,85 | 0,85 | 0,89 | 0,80 | 0,86 |
+| **S3 — Fine-Tuning** | **0,87** | **0,87** | **0,91** | **0,81** | **0,90** |
+| S4 — CNN Sederhana | 0,67 | 0,67 | 0,76 | 0,53 | 0,72 |
+
+**Model terbaik: Skenario 3 (Fine-Tuning)** — 118 dari 135 citra uji diklasifikasikan dengan benar. Waktu inferensi rata-rata 103,33 ms/citra dengan ukuran berkas model 22,52 MB.
+
+## Catatan Teknis
+
+Pada versi pelatihan sebelumnya, ditemukan bahwa jumlah batch per epoch pada Skenario 2–4 tidak konsisten (`steps_per_epoch` dihitung manual dengan pembagian bilangan bulat, sehingga sebagian epoch hanya memproses sebagian kecil data latih). Hal ini telah diperbaiki dengan mengambil jumlah batch langsung dari objek generator (`steps_per_epoch=len(train_generator)`), sehingga setiap epoch kini secara konsisten memproses seluruh 20 batch data latih. Notebook pada repository ini adalah hasil pelatihan ulang setelah perbaikan tersebut.
+
+## Lingkungan
+
+- Google Colab, GPU Tesla T4
+- TensorFlow/Keras 2.20.0
+- Data disimpan dan diakses melalui Google Drive
